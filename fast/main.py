@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, Query, Path
+from pydantic import BaseModel, Field
 
 app = FastAPI()  # 建立一個 Fast API application
 
@@ -45,3 +46,49 @@ async def get_model(model_name: ModelName):
         return {"model_name": model_name, "message": "LeCNN all the images"}
 
     return {"model_name": model_name, "message": "Have some residuals"}
+
+
+@app.get("/files/{file_path:path}")
+async def read_file(file_path: str):
+    return {"file_path": file_path}
+
+
+# class Item(BaseModel):
+#     name: str
+#     description: Optional[str] = None
+#     price: float
+#     tax: Optional[float] = None
+
+
+# @app.post("/items/")
+# async def create_item(item: Item):
+#     return item
+# async def create_item(item: Item):
+#     if item.price > 100:
+#         return "太贵了"
+#     return item
+
+# @app.get("/items/")
+# def read(paword: str = Query(..., min_length=8, max_length=16)):
+#     results = {"items": [{"oneid": "shanghai"}, {"two": "beijing"}]}
+#     if paword:
+#         results.update({"paword": paword})
+#     return results
+class Item(BaseModel):
+    name: str
+    description: Optional[str] = None
+    price: float
+    tax: Optional[float] = None
+
+
+@app.put("/items")
+def update_item(item: Optional[Item]):
+    result = {}
+    if item.tax is not None:
+        total = item.price*item.tax
+        result['price'] = total
+        result['name'] = item.name
+        return result
+    result['price'] = item.price
+    result['name'] = item.name
+    return result
